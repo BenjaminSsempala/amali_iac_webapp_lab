@@ -177,7 +177,7 @@ Terraform will perform the following actions:
             },
           - {
               - cidr_blocks      = [
-                  - "197.157.165.220/32",
+                  - "x.x.x.x/32",
                 ]
               - description      = "SSH from the allowed CIDR"
               - from_port        = 22
@@ -242,7 +242,7 @@ Terraform will perform the following actions:
   # aws_vpc_security_group_ingress_rule.ssh will be destroyed
   - resource "aws_vpc_security_group_ingress_rule" "ssh" {
       - arn                    = "arn:aws:ec2:eu-west-1:697863031884:security-group-rule/sgr-0aa62c02226a19424" -> null
-      - cidr_ipv4              = "197.157.165.220/32" -> null
+      - cidr_ipv4              = "x.x.x.x/32" -> null
       - description            = "SSH from the allowed CIDR" -> null
       - from_port              = 22 -> null
       - id                     = "sgr-0aa62c02226a19424" -> null

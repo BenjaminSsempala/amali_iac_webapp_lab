@@ -181,7 +181,7 @@ Terraform will perform the following actions:
   # aws_vpc_security_group_ingress_rule.ssh will be created
   + resource "aws_vpc_security_group_ingress_rule" "ssh" {
       + arn                    = (known after apply)
-      + cidr_ipv4              = "197.157.165.220/32"
+      + cidr_ipv4              = "x.x.x.x/32"
       + description            = "SSH from the allowed CIDR"
       + from_port              = 22
       + id                     = (known after apply)
