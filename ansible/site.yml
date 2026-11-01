@@ -1,0 +1,49 @@
+---
+# Install Nginx, enable and start it, deploy the web app, restart via handler
+- name: Configure the Nginx web server
+  hosts: web
+  become: true
+
+  vars:
+    app_title: Terraform + Ansible Web App
+    app_author: Benjamin Ssempala
+    web_root: /usr/share/nginx/html
+
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.command: amazon-linux-extras install -y nginx1
+      args:
+        creates: /usr/sbin/nginx
+
+    - name: Deploy the web app
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: "{{ web_root }}/index.html"
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart nginx
+
+    - name: Enable and start Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Run the restart handler now if the app changed
+      ansible.builtin.meta: flush_handlers
+
+    - name: Check the app is reachable on port 80 from this machine
+      ansible.builtin.uri:
+        url: "http://{{ inventory_hostname }}/"
+        return_content: true
+      register: site
+      delegate_to: localhost
+      become: false
+      failed_when: site.status != 200 or app_title not in site.content
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

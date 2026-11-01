@@ -1,0 +1,26 @@
+
+PLAY [Configure the Nginx web server] ******************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [3.252.195.189]
+
+TASK [Install Nginx] ***********************************************************
+ok: [3.252.195.189]
+
+TASK [Deploy the web app] ******************************************************
+changed: [3.252.195.189]
+
+TASK [Enable and start Nginx] **************************************************
+ok: [3.252.195.189]
+
+TASK [Run the restart handler now if the app changed] **************************
+
+RUNNING HANDLER [Restart nginx] ************************************************
+changed: [3.252.195.189]
+
+TASK [Check the app is reachable on port 80 from this machine] *****************
+ok: [3.252.195.189 -> localhost]
+
+PLAY RECAP *********************************************************************
+3.252.195.189              : ok=6    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

@@ -5,21 +5,67 @@ Provision an EC2 instance on AWS with Terraform, then configure an Nginx web ser
 **Author:** Benjamin Ssempala
 **Tools:** Terraform v1.5+, Ansible 2.14+
 
-> Work in progress.
-
 ## Planned layout
 
 ```
 .
 ├── terraform/
+│   ├── versions.tf      # Terraform and provider versions
+│   ├── providers.tf     # AWS provider + default tags
 │   ├── main.tf          # security group (80, 22), key pair, EC2 t2.micro (Amazon Linux 2)
 │   ├── variables.tf
 │   └── outputs.tf       # public IP and DNS, SSH user, key name and path
 ├── ansible/
+│   ├── ansible.cfg      # inventory, private key, host key checking
 │   ├── inventory.ini    # EC2 public IP + private key
-│   └── site.yml         # install Nginx, enable/start, deploy app, restart handler
+│   ├── site.yml         # install Nginx, enable/start, deploy app, restart handler
+│   └── templates/
+│       └── index.html.j2  # web page served by Nginx
+├── keys/                # private key written by Terraform (git-ignored)
 └── evidence/
     ├── APPLY.txt        # terraform apply summary
     ├── DESTROY.txt      # terraform destroy summary
     └── screenshots      # browser + curl output, tool versions
 ```
+
+## How to run
+
+**Prerequisites:** Terraform 1.5+, Ansible 2.14–2.17 (2.18+ needs Python 3.8 on the server; Amazon Linux 2 has 3.7), AWS credentials (`aws sts get-caller-identity` works).
+
+1. Provision (SSH is only allowed from the CIDR you pass in):
+
+   ```bash
+   cd terraform
+   terraform init
+   terraform apply -var "ssh_allowed_cidr=$(curl -s https://checkip.amazonaws.com)/32" | tee ../evidence/APPLY.txt
+   ```
+2. Point Ansible at the new instance:
+
+   ```bash
+   terraform output -raw ansible_inventory > ../ansible/inventory.ini
+   ```
+3. Configure the server (run from `ansible/` so `ansible.cfg` is used):
+
+   ```bash
+   cd ../ansible
+   ansible-playbook site.yml
+   ```
+4. Verify:
+
+   ```bash
+   curl -i http://$(cd ../terraform && terraform output -raw public_ip)
+   ```
+
+   Then open `terraform output -raw web_url` in a browser.
+5. Clean up:
+
+   ```bash
+   cd ../terraform
+   terraform destroy -var "ssh_allowed_cidr=$(curl -s https://checkip.amazonaws.com)/32" | tee ../evidence/DESTROY.txt
+   ```
+
+## Notes
+
+- The AMI comes from the public SSM parameter for the latest Amazon Linux 2 image, so no AMI id is hard-coded.
+- Nginx is installed from the Amazon Linux Extras `nginx1` topic, since it isn't in the Amazon Linux 2 core repositories.
+- The instance requires IMDSv2 and has an encrypted root disk.
